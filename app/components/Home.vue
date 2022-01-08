@@ -1,41 +1,103 @@
 <template>
-    <Page>
-        <ActionBar>
-            <Label text="Home"/>
-        </ActionBar>
+  <StackLayout id="container-home"  rows="auto, *" columns="*">
+    <Image
+      id="logo"
+      src.decode="font://&#xf44b;"
+      class="fas"
+      horizontalAlignment="stretch"
+    />
+    <Label
+      class="text"
+      textWrap="true"
+      v-if="user"
+      :text="`Hi ${user.firstName} ${user.lastName}, you have ${nbTodayExercice} execices planned today.`"
+    />
+    <Label
+      class="text"
+      textWrap="true"
+      v-else
+      :text="`Hi, you have ${nbTodayExercice} execices planned today.`"
+    />
 
-        <GridLayout>
-            <Label class="info">
-                <FormattedString>
-                    <Span class="fas" text.decode="&#xf135; "/>
-                    <Span :text="message"/>
-                </FormattedString>
-            </Label>
-        </GridLayout>
-    </Page>
+    <template v-if="user">
+      <Label
+        class="text"
+        textWrap="true"
+        text="You still not have an account, create one to enjoy the full potential of our application"
+      />
+      <Button text="Account" @tap="createUser" />
+    </template>
+    <template v-if="exercices.length > 0">
+      <Label class="text-little" textWrap="true" text="Today exercices" />
+      <ListView
+        id="list-exercice"
+        for="exercice in todayExercices"
+        @itemTap="selectExercices"
+      >
+        <v-template>
+          <FlexboxLayout
+            class="exercice"
+            justifyContent="space-between"
+            alignContent="space-between"
+          >
+            <Label class="text" :text="exercice.name" />
+            <Label :text="`${exercice.date.getHours()}:${exercice.date.getMinutes()}`"/>
+          </FlexboxLayout>
+        </v-template>
+      </ListView>
+    </template>
+    <template v-else>
+      <Label
+        textWrap="true"
+        text="No exercices planned today let`s create one !"
+      />
+      <Button text="Exercices" @tap="createExercice" />
+    </template>
+  </StackLayout>
 </template>
 
 <script>
-  export default {
-    computed: {
-      message() {
-        return "Blank {N}-Vue app";
-      }
-    }
-  };
+export default {
+  props: {
+    user: Object,
+    exercices: Array,
+  },
+  computed: {
+    todayExercices() {
+      const today = new Date();
+      console.log(today.getFullYear());
+      return this.exercices.filter((exercice) =>
+        this.sameDay(exercice.date, today)
+      );
+    },
+  },
+  methods: {
+    sameDay(d1, d2) {
+      return (
+        d1.getFullYear() === d2.getFullYear() &&
+        d1.getMonth() === d2.getMonth() &&
+        d1.getDate() === d2.getDate()
+      );
+    },
+  },
+};
 </script>
 
-<style scoped lang="scss">
-    @import '@nativescript/theme/scss/variables/blue';
+<style>
+#container-home > * {
+  margin-bottom: 60px;
+}
+#list-exercice {
+  margin-top: -55px;
+  height: 500px;
+  width: 100%;
 
-    // Custom styles
-    .fas {
-        @include colorize($color: accent);
-    }
-
-    .info {
-        font-size: 20;
-        horizontal-align: center;
-        vertical-align: center;
-    }
+  border: 1px solid black;
+}
+.exercice {
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  border: 1px solid black;
+}
 </style>
